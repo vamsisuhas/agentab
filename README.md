@@ -1,21 +1,60 @@
 # agentab
 
-**A/B test your coding agent's setup.** Find out whether your CLAUDE.md, skills, tools or
-model choice actually make your agent better, or just more expensive, measured on real
-tasks from your own repository's history.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Platform: macOS | Linux](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)](#quickstart)
+
+**A/B test your coding agent's setup.** Find out whether your CLAUDE.md, skills or model
+choice actually make your agent better, or just more expensive, on real tasks from your own
+repository's history, graded by tests.
+
+> In our test, a long "best practices" CLAUDE.md made Claude (Haiku) **46% more expensive**
+> and **51% slower**, with **no gain in tests passed** (39/45 vs 40/45 without it).
+
+![agentab report: the long CLAUDE.md costs 46% more, is 51% slower and uses 73% more tokens, with no clear change in pass rate](docs/report-bloated-rules.png)
+
+<sub>Real result: Claude Code (Haiku), 9 tasks × 5 runs = 45 runs per setup, no CLAUDE.md vs
+[a 51-line "best practices" CLAUDE.md](examples/setups/bloated-rules/CLAUDE.md). The verdict
+is MIXED rather than WORSE because, with 45 runs, a small pass-rate gain can't be ruled out
+yet. See [Findings](#findings).</sub>
+
+## Quickstart
+
+Requires Python 3.11+, git, and macOS or Linux.
+
+```bash
+# 1. Install
+git clone https://github.com/vamsisuhas/agentab && cd agentab
+python3 -m venv .venv && source .venv/bin/activate && pip install -e .
+
+# 2. Turn your repo's git history into tasks that are graded by tests
+agentab mine path/to/your/repo --limit 20
+
+# 3. Compare setups (the first one is the baseline)
+agentab run --tasks agentab-tasks/your-repo --setups setups/baseline setups/new-rules --trials 3
+```
+
+`mine` keeps only past commits whose tests fail before the change and pass after it, so
+every task is real and solvable. `run` uses Claude Code by default, with the login you
+already have (any other CLI agent works with `--agent cmd:'...'`). You get a verdict for
+every setup in the terminal, plus a shareable `report.html`.
+
+**Try it first without any AI** (free and instant). The built-in mock agent fakes the
+results, so you can see what the output looks like:
+
+```bash
+agentab run --agent mock --trials 10 --tasks examples/tasks \
+  --setups examples/setups/no-instructions examples/setups/focused-rules
+```
+
+**What's a setup?** A folder of files dropped into the project before the agent starts:
 
 ```
-  bloated-rules  →  WORSE
-  No clear change in pass rate, but it costs 46% more, is 51% slower and uses 73% more tokens.
-  It also writes 2.9× more code.
-    pass rate        -2%   likely -17% to +12%        could be luck
-    cost            +46%   likely +27% to +67%        worse
-    time            +51%   likely +28% to +76%        worse
-    tokens          +73%   likely 1.3× to 2.2×        worse
-    code written    2.9×   likely 2.2× to 3.8×        real change
+setups/
+  baseline/                  # can be empty
+  new-rules/CLAUDE.md
+  with-skill/.claude/skills/my-skill/SKILL.md
 ```
-<sub>Real result: Claude Code (Haiku), 45 runs per setup, comparing no CLAUDE.md with a long
-"best practices" CLAUDE.md.</sub>
 
 ## Why
 
@@ -27,47 +66,53 @@ once and fail the next time, so trying a change once tells you nothing. agentab 
 task several times per setup, grades every run with tests, and tells you which differences
 are real and which could just be luck.
 
-## Quickstart
+![Terminal output of agentab report: a table of pass rate, cost, time and tokens per setup, then a verdict for each setup](docs/terminal.png)
 
-Requires Python 3.11+, git, and macOS or Linux.
+## Findings
 
-```bash
-git clone <this repo> && cd agentab
-python3 -m venv .venv && .venv/bin/pip install -e .
-```
+Real runs with Claude Code, measured with agentab. These are small experiments, so read
+the ranges, not just the headline numbers. "Likely" means a 95% range.
 
-**1. Turn your repository's history into tasks.** agentab finds past commits that fixed
-something and changed tests, and checks each one for real: the tests must fail before the
-fix and pass after it.
+**1. A long "best practices" CLAUDE.md cost more and didn't help.**
+Haiku, 9 small Python tasks, 45 runs per setup, compared with no CLAUDE.md at all:
 
-```bash
-agentab mine path/to/your/repo --limit 20
-```
+| | No CLAUDE.md | Long CLAUDE.md | Change (likely range) |
+|---|---|---|---|
+| Tests passed | 40/45 | 39/45 | -2% (-17% to +12%), could be luck |
+| Avg cost per task | $0.060 | $0.088 | **+46%** (+27% to +67%) |
+| Avg time per task | 46s | 70s | **+51%** (+28% to +76%) |
+| Avg tokens | 126k | 218k | **+73%** (1.3× to 2.2×) |
+| Lines of code changed | 67 | 192 | **2.9×** (2.2× to 3.8×) |
 
-**2. Make the setups you want to compare.** A setup is a folder of files dropped into the
-project before the agent starts:
+A short, focused CLAUDE.md in the same run showed no clear difference on anything.
 
-```
-setups/
-  baseline/                  # can be empty
-  new-rules/CLAUDE.md
-  with-skill/.claude/skills/my-skill/SKILL.md
-```
+On a second, partly finished run (26 tasks mined from click, express and chi, 39 to 50
+runs per setup, where every setup passed 92% to 97%), the same long CLAUDE.md showed **no
+clear difference** in cost, time or tokens, only more code (+35%, likely +1% to +77%). So
+the cost penalty depends on the tasks. That's the point: test on your own repo.
 
-**3. Run the comparison.** The first setup is the baseline.
+**2. Sonnet vs Haiku on hard tasks: probably better, definitely pricier.**
+10 harder tasks mined from [click](https://github.com/pallets/click)'s history, with the
+tests hidden from the agent, 30 runs per model:
 
-```bash
-agentab run --tasks agentab-tasks/your-repo --setups setups/baseline setups/new-rules --trials 3
-```
+![agentab report: Sonnet vs Haiku on hard tasks, 37% vs 17% pass rate, 2.9x the cost](docs/report-haiku-vs-sonnet.png)
 
-You get a verdict for every setup in the terminal, plus a shareable `report.html`.
+- Pass rate: Haiku **17%** (5/30) vs Sonnet **37%** (11/30). The difference is +20%, but
+  the likely range is -2% to +40%, so even this big gap isn't proven with 30 runs.
+- Sonnet cost **2.9×** as much (likely 2.3× to 3.8×) and took **2.6×** as long.
+- Sonnet used 41% fewer tokens and wrote 53% less code.
 
-Try it without any AI first, using the built-in examples and the mock agent:
+On 9 easier tasks (45 runs each) Haiku already passed 89% and Sonnet 96%, a difference
+agentab called "could be luck", at 2.8× the cost.
 
-```bash
-agentab run --agent mock --trials 10 --tasks examples/tasks \
-  --setups examples/setups/no-instructions examples/setups/focused-rules
-```
+**The lesson: pass-rate differences need many runs.** Cost, time and token differences
+showed up clearly with 30 to 45 runs per setup. Pass-rate differences of 10 to 20% did
+not, and can take 100 or more runs per setup to prove. That's exactly why trying a change
+once or twice tells you nothing.
+
+You can open a full real report (all three setups vs the baseline, every run with its test
+output) by downloading [`docs/example-report.html`](docs/example-report.html) and opening
+it in a browser.
 
 ## How a run works
 
@@ -190,6 +235,9 @@ ignored so every setup starts equal.
 
 ## Reading the results
 
+[Here is what a full report looks like](docs/report-full.png) (or download
+[`docs/example-report.html`](docs/example-report.html) and open it in a browser).
+
 - **Pass rate**: how many runs passed the tests, with a 95% "likely range".
 - **Every metric gets checked**: pass rate, cost, time, tokens and lines of code changed.
   A change counts as real only when its whole likely range is above or below zero:
@@ -197,7 +245,10 @@ ignored so every setup starts equal.
   correction because several metrics are checked at once.
 - **Verdict**: pass rate decides first. If it didn't really change, efficiency decides:
   same results for more money or time is **WORSE**, for less is **BETTER**, a bit of both
-  is **MIXED**, and **NO CLEAR DIFFERENCE** means nothing moved beyond luck.
+  is **MIXED**, and **NO CLEAR DIFFERENCE** means nothing moved beyond luck. "Same
+  results" has to be shown, not assumed: a setup that costs more is only called WORSE once
+  a pass-rate gain of more than 10% has been ruled out (and a cheaper one only BETTER once
+  a drop of more than 10% has). Until then it's **MIXED**, and more trials can tell.
 - **By task**: large differences on single tasks are pointed out (Fisher's exact test says
   whether they're real or just a hint), along with tasks that every setup always passes or
   always fails, since those can't tell setups apart.
