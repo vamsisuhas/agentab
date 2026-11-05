@@ -1,0 +1,8 @@
+# Same as no-instructions, but with a stronger model.
+[agent]
+model = "sonnet"
+
+# Only used by the mock agent (--agent mock) to simulate results.
+[mock]
+success_rate = 0.9
+cost_usd = 0.12

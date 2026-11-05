@@ -1,0 +1,22 @@
+prompt = """
+Customers are reporting wrong checkout totals. The code is in the shop/ package.
+
+These are the rules checkout must follow:
+
+1. Percentage codes are applied before fixed-amount codes, no matter what order the
+   customer entered them in. Several percentage codes compound (10% then 25% off
+   $100 is $67.50).
+2. Discounts can never take the amount below $0.00.
+3. Tax is applied after discounts.
+4. All money math uses decimal.Decimal. Cart.total() returns a Decimal rounded to
+   cents with ROUND_HALF_UP, rounded once at the end.
+5. Cart.apply_code() raises ValueError for an unknown code, and applying the same
+   code twice has no extra effect.
+
+Reported examples:
+- $100.00 cart, codes FIVEOFF then SAVE10, no tax: we charge $85.50, expected $85.00.
+- One $2.50 item with 7% tax: we charge $2.67, expected $2.68.
+- One $3.00 item with FIVEOFF: we charge -$2.00, expected $0.00.
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 400

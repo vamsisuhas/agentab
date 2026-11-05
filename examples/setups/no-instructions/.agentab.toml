@@ -1,0 +1,4 @@
+# Only used by the mock agent (--agent mock) to simulate results.
+[mock]
+success_rate = 0.6
+cost_usd = 0.035

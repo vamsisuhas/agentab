@@ -1,0 +1,10 @@
+prompt = """
+roman.py: to_int() gets subtractive numerals wrong. to_int("IV") returns 6
+instead of 4, and to_int("MCMXCIV") returns 2216 instead of 1994.
+
+Please fix it. It should also accept lowercase input ("xiv" -> 14), and raise
+ValueError for anything that contains characters other than I, V, X, L, C, D, M
+(for example to_int("ABC") or to_int("")).
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 300

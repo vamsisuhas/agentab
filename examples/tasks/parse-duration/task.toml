@@ -1,0 +1,22 @@
+prompt = """
+Implement parse_duration() and format_duration() in durations.py (they currently
+raise NotImplementedError).
+
+parse_duration(text) -> int (seconds)
+- Units: d (86400 s), h (3600 s), m (60 s), s (1 s). Case-insensitive.
+- The text is one or more <whole number><unit> parts, with optional spaces between
+  parts: "1h30m", "2d 4h", "90s", "1D2h3M4s". Leading/trailing whitespace is allowed.
+- Each unit may appear at most once, and units must be in the order d, h, m, s.
+  "30m1h" and "1h1h" are invalid.
+- Numbers may be larger than the next unit up: "90m" == 5400.
+- Raise ValueError for anything else, e.g. "", "10", "1x", "-5m", "1.5h", "h", "1 h".
+
+format_duration(seconds) -> str
+- Canonical form with spaces, largest unit first, zero parts left out:
+  format_duration(93784) == "1d 2h 3m 4s", format_duration(3600) == "1h".
+- format_duration(0) == "0s".
+- Raise ValueError for negative numbers and TypeError for non-integers.
+- parse_duration(format_duration(n)) == n for every n >= 0.
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 400

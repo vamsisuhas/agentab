@@ -1,0 +1,16 @@
+prompt = """
+semver.py is supposed to implement Semantic Versioning 2.0.0 (https://semver.org),
+but compare() breaks on pre-release versions (it crashes on "1.0.0-alpha") and it
+accepts strings that are not valid versions.
+
+Please make it follow the SemVer 2.0.0 spec exactly:
+
+- parse(version) returns (major, minor, patch, prerelease, build) and raises
+  ValueError for anything that is not a valid SemVer 2.0.0 version string.
+- compare(a, b) returns -1, 0 or 1 using SemVer 2.0.0 precedence rules.
+  Build metadata is ignored, so versions that differ only in build metadata compare equal.
+- sort_versions(versions) returns a new list sorted from lowest to highest
+  precedence. It must be a stable sort.
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 400

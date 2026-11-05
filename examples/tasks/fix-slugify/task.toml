@@ -1,0 +1,14 @@
+prompt = """
+slugify() in text.py produces broken URL slugs. Expected behaviour:
+
+    slugify("Hello, World!")        == "hello-world"
+    slugify("  Many   spaces  ")    == "many-spaces"
+    slugify("Café Crème")           == "cafe-creme"
+    slugify("--Already-slugged--")  == "already-slugged"
+    slugify("C++ & Python 3.12")    == "c-python-3-12"
+
+Rules: lowercase, accents removed, only a-z and 0-9 kept, any run of other
+characters becomes a single "-", and no leading or trailing "-".
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 300

@@ -1,0 +1,15 @@
+prompt = """
+Feature request for cache.py: add expiry (TTL) support to Cache.
+
+- Cache(clock=time.monotonic): accept an optional `clock` function that returns
+  the current time in seconds. Default to time.monotonic.
+- cache.set(key, value, ttl=None): `ttl` is a number of seconds. None means the
+  entry never expires.
+- cache.get(key, default=None): return `default` if the key is missing OR expired.
+  Expired entries should be removed when they are found.
+- len(cache) must count only entries that have not expired.
+
+Keep the existing behaviour working for code that doesn't pass a ttl.
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 300

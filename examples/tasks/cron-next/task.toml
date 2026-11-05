@@ -1,0 +1,27 @@
+prompt = """
+Implement next_run(expression, after) in cron.py. It currently raises NotImplementedError.
+
+next_run takes a standard 5-field cron expression ("minute hour day-of-month month
+day-of-week") and a datetime, and returns the first datetime STRICTLY after `after`
+(with seconds and microseconds set to 0) that matches the expression.
+
+Each field supports:
+- "*"                every value
+- a number           "5"
+- a range            "1-5"
+- a list             "1,15,30" (items may be numbers, ranges or steps)
+- a step             "*/15" or "10-50/20"
+
+Ranges: minute 0-59, hour 0-23, day-of-month 1-31, month 1-12, day-of-week 0-7
+where both 0 and 7 mean Sunday (1 = Monday ... 6 = Saturday).
+
+Day matching follows classic cron: if BOTH day-of-month and day-of-week are
+restricted (neither field is exactly "*"), a day matches when EITHER field
+matches. Otherwise, the day must match both fields.
+
+Raise ValueError for invalid expressions (wrong number of fields, values out of
+range, a step of 0, a range whose start is greater than its end, non-numbers) and
+for expressions that can never match, such as "0 0 30 2 *".
+"""
+test = "{python} -m unittest -q test_hidden"
+timeout = 400
